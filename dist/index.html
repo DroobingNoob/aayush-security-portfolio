@@ -18,7 +18,7 @@
     <article class="project"><div class="tag">CRYPTOGRAPHY EXPERIMENT</div><h3>Geo-Encryption</h3><p>Location-aware encryption that uses live coordinates with a user-defined key, binding decryption to the original geographic context.</p><div class="stack">GEOLOCATION APIS · CUSTOM ENCRYPTION LOGIC</div></article>
     <article class="project"><div class="tag">DEFENSIVE ENGINEERING</div><h3>Web Application Firewall</h3><p>A Python proxy that inspects HTTP traffic, detects SQL injection and XSS patterns, logs features, and applies rule-based and ML-supported request classification.</p><div class="stack">PYTHON · HTTP INSPECTION · TRAFFIC ANALYSIS</div></article>
   </div></section>
-  <section id="terminal"><div class="section-head"><b class="mono">02</b><h2>Explore the profile</h2></div><div class="terminal-shell"><div class="terminal-bar"><span>AD-PORTFOLIO / BROWSER SANDBOX</span><span class="terminal-status">● SAFE MODE</span></div><div class="terminal-output" id="terminalOutput"><span class="ok">Welcome to Aayush's portfolio terminal.</span>\n<span class="hint">This is a browser-only sandbox. Nothing you type is executed on a server.\nType <span class="ok">help</span> to explore.</span></div><label class="terminal-input-row" for="terminalInput">visitor@portfolio:~$ <input id="terminalInput" class="terminal-input" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Portfolio terminal command" autofocus></label></div><p class="terminal-note">Try: <code>help</code>, <code>about</code>, <code>projects</code>, <code>skills</code>, <code>awards</code>, <code>contact</code>, or <code>clear</code>.</p></section>
+  <section id="terminal"><div class="section-head"><b class="mono">02</b><h2>Explore the profile</h2></div><div class="terminal-shell"><div class="terminal-bar"><span>AD-PORTFOLIO / BROWSER SANDBOX</span><span class="terminal-status">● SAFE MODE</span></div><div class="terminal-output" id="terminalOutput"><span class="ok">Welcome to Aayush's portfolio filesystem.</span>\n<span class="hint">You are in a read-only browser sandbox. No command reaches a server.\nStart with <span class="ok">ls</span>, <span class="ok">tree</span>, or <span class="ok">help</span>.</span></div><label class="terminal-input-row" for="terminalInput">visitor@portfolio:<span id="terminalPath">~</span>$ <input id="terminalInput" class="terminal-input" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Portfolio terminal command" autofocus></label></div><p class="terminal-note">Try: <code>ls -la</code>, <code>cd projects</code>, <code>cat obsidian.md</code>, <code>tree</code>, <code>find . -type f</code>, or <code>help</code>.</p></section>
   <section><div class="section-head"><b class="mono">03</b><h2>Enterprise delivery</h2></div><div class="timeline">
     <article class="role"><time>APR 2025 — SEP 2026</time><h3>Associate <span class="company">/ PwC India</span></h3><p>Developed React-based enterprise applications in the Guidewire ecosystem across client projects. Led development of an AI-enabled platform for BRD, FSD, test-case generation, and log analysis that was presented to and adopted by external enterprise clients. Built an SAP Effort Estimator recognized by senior management and contributed to three releases across two client projects.</p></article>
     <article class="role"><time>SEP 2024 — MAR 2025</time><h3>Specialist <span class="company">/ PwC India</span></h3><p>Enhanced React applications and developed working knowledge of Guidewire and Jutro across ClaimCenter, ContactManager, CustomerEngage, and VendorEngage.</p></article>
@@ -34,25 +34,58 @@
   (() => {
     const input = document.getElementById('terminalInput');
     const output = document.getElementById('terminalOutput');
-    const entries = {
-      help: 'Commands: about, projects, skills, awards, certifications, writing, contact, clear',
-      about: 'Aayush Dasgupta\nM.Sc. Enterprise & IT Security, Hochschule Offenburg\nEnterprise software and application security practitioner.',
-      projects: 'OBSIDIAN — authorized assessment platform: Nmap, OWASP ZAP, Nuclei.\nGEO-ENCRYPTION — location-bound encryption prototype.\nWEB APPLICATION FIREWALL — Python proxy for request inspection and attack detection.',
-      skills: 'React · TypeScript · Python · FastAPI · Docker\nApplication security · Secure software development · Vulnerability assessment · Security architecture',
-      awards: '3× PwC Change Catalyst Award\nGET SET HACK — Top 100 (76th of 22,000 participants)',
-      certifications: 'Oracle Certified AI Foundations Associate\nCertified Network Security Practitioner\nCertified AppSec Practitioner',
-      writing: 'Medium: droobingnoob.medium.com\nTryHackMe: continuing CTF practice',
-      contact: 'LinkedIn: linkedin.com/in/aayush-dasgupta\nGitHub: github.com/DroobingNoob'
+    const pathLabel = document.getElementById('terminalPath');
+    const home = '/home/aayush'; let cwd = home; let history = []; let historyIndex = 0;
+    const directories = new Set([home, home + '/projects', home + '/experience', home + '/credentials', home + '/links']);
+    const files = {
+      [home + '/README.md']: '# Aayush Dasgupta\n\nEnterprise software and application security practitioner.\n\nStart with: ls -la, tree, or cat README.md',
+      [home + '/about.txt']: 'Aayush Dasgupta\nM.Sc. Enterprise & IT Security — Hochschule Offenburg\nFocus: application security, secure software development, and security architecture.',
+      [home + '/projects/obsidian.md']: '# Obsidian\n\nA full-stack platform for authorized security assessment.\nIntegrates Nmap, OWASP ZAP, and Nuclei with evidence normalization, contextual risk scoring, false-positive assessment, and attack-path correlation.\n\nStack: React, TypeScript, Python, FastAPI, Tailwind, Docker.',
+      [home + '/projects/geo-encryption.md']: '# Geo-Encryption\n\nLocation-aware encryption prototype that combines a user key with live coordinates to bind decryption to the original geographic context.',
+      [home + '/projects/web-application-firewall.md']: '# Web Application Firewall\n\nA Python proxy for HTTP inspection, SQL injection and XSS detection, traffic logging, and rule-based / ML-supported request classification.',
+      [home + '/experience/pwc-india.txt']: 'PwC India — Associate (2025–2026)\nReact-based enterprise applications in the Guidewire ecosystem.\nBuilt an AI-enabled BRD/FSD/test-case/log-analysis platform adopted by enterprise clients; contributed to three releases across two client projects.',
+      [home + '/experience/security-internships.txt']: 'CyberSRC Consultancy · Virtually Testing Foundation · Slytherin EduTech\nNetwork mapping, vulnerability assessment, penetration testing, security administration, and cyber-forensics research.',
+      [home + '/credentials/certifications.txt']: 'Oracle Certified AI Foundations Associate\nCertified Network Security Practitioner\nCertified AppSec Practitioner',
+      [home + '/credentials/awards.txt']: '3× PwC Change Catalyst Award\nGET SET HACK — Top 100 (76th of 22,000 participants)',
+      [home + '/links/linkedin.url']: 'https://linkedin.com/in/aayush-dasgupta',
+      [home + '/links/github.url']: 'https://github.com/DroobingNoob',
+      [home + '/links/medium.url']: 'https://droobingnoob.medium.com'
     };
+    const displayPath = () => cwd === home ? '~' : '~' + cwd.slice(home.length);
+    const updatePrompt = () => { pathLabel.textContent = displayPath(); };
+    const resolve = (value = '.') => {
+      let raw = value === '~' ? home : value.startsWith('~/') ? home + value.slice(1) : value.startsWith('/') ? value : cwd + '/' + value;
+      const parts = []; raw.split('/').forEach(part => { if (!part || part === '.') return; if (part === '..') parts.pop(); else parts.push(part); });
+      return '/' + parts.join('/');
+    };
+    const children = (dir) => { const base = dir.endsWith('/') ? dir : dir + '/'; const values = [...directories, ...Object.keys(files)].filter(p => p.startsWith(base) && !p.slice(base.length).includes('/')).map(p => ({path:p,name:p.slice(base.length),dir:directories.has(p)})); return values.sort((a,b) => a.name.localeCompare(b.name)); };
     const append = (text, className = '') => { const line = document.createElement('div'); line.textContent = text; if (className) line.className = className; output.appendChild(line); output.scrollTop = output.scrollHeight; };
+    const prompt = (raw) => append('visitor@portfolio:' + displayPath() + '$ ' + raw, 'ok');
+    const tree = (dir, prefix = '') => { const items = children(dir); return items.flatMap((item, i) => { const last = i === items.length - 1; const line = prefix + (last ? '└── ' : '├── ') + item.name + (item.dir ? '/' : ''); return item.dir ? [line, ...tree(item.path, prefix + (last ? '    ' : '│   '))] : [line]; }); };
+    const help = 'Virtual Linux-like commands:\n  pwd                 print current directory\n  ls [-la] [path]     list directory contents\n  cd [path]           change directory\n  cat <file>          read a portfolio file\n  tree [path]         show the portfolio filesystem\n  find . -type f      list all portfolio files\n  whoami, uname -a    inspect the sandbox\n  open <linkedin|github|medium>\n  clear, history, help\n\nTip: use ↑ / ↓ for command history and Tab for completion.';
+    const execute = (raw) => {
+      const [cmd = '', ...args] = raw.trim().split(/\s+/); const arg = args.join(' '); const target = resolve(arg || '.');
+      if (!cmd) return;
+      if (cmd === 'help') return append(help);
+      if (cmd === 'pwd') return append(cwd);
+      if (cmd === 'clear') { output.innerHTML = ''; return; }
+      if (cmd === 'whoami') return append('visitor (read-only portfolio sandbox)');
+      if (cmd === 'uname' && args[0] === '-a') return append('AD PortfolioOS 1.0.0 browser-sandbox x86_64');
+      if (cmd === 'history') return history.map((entry, i) => append(String(i + 1).padStart(4, ' ') + '  ' + entry));
+      if (cmd === 'cd') { const next = resolve(arg || '~'); if (!directories.has(next)) return append('cd: ' + (arg || '~') + ': No such directory'); cwd = next; updatePrompt(); return; }
+      if (cmd === 'ls') { const lsPath = resolve(args.find(a => !a.startsWith('-')) || '.'); if (!directories.has(lsPath)) return append('ls: cannot access ' + (arg || '.') + ': No such directory'); const long = args.some(a => a.includes('l')); const items = children(lsPath); return long ? items.forEach(item => append((item.dir ? 'drwxr-xr-x' : '-rw-r--r--') + '  portfolio  ' + item.name + (item.dir ? '/' : ''))) : append(items.map(item => item.name + (item.dir ? '/' : '')).join('    ')); }
+      if (cmd === 'cat') { if (!arg) return append('cat: missing file operand'); if (!files[target]) return append('cat: ' + arg + ': No such file'); return append(files[target]); }
+      if (cmd === 'tree') { if (!directories.has(target)) return append('tree: ' + (arg || '.') + ': No such directory'); append((target === home ? '~' : target) + '/'); tree(target).forEach(line => append(line)); return; }
+      if (cmd === 'find') { if (args[0] !== '.' || (args[1] && args.slice(1).join(' ') !== '-type f')) return append('find: supported usage: find . -type f'); return Object.keys(files).filter(p => p.startsWith(cwd + '/') || cwd === home).forEach(p => append('./' + p.slice(cwd.length + 1))); }
+      if (cmd === 'open') { const links = {linkedin:'https://linkedin.com/in/aayush-dasgupta', github:'https://github.com/DroobingNoob', medium:'https://droobingnoob.medium.com'}; if (!links[args[0]]) return append('open: choose linkedin, github, or medium'); window.open(links[args[0]], '_blank', 'noopener'); return append('Opening ' + args[0] + '…'); }
+      append(cmd + ': command not found. Type help for available commands.');
+    };
     input.addEventListener('keydown', (event) => {
-      if (event.key !== 'Enter') return;
-      const command = input.value.trim().toLowerCase();
-      if (!command) return;
-      append('visitor@portfolio:~$ ' + command, 'ok');
-      if (command === 'clear') { output.innerHTML = ''; input.value = ''; return; }
-      append(entries[command] || 'Command not found: ' + command + '. Type help for available commands.');
-      input.value = '';
+      if (event.key === 'Enter') { const raw = input.value.trim(); if (!raw) return; prompt(raw); history.push(raw); historyIndex = history.length; execute(raw); input.value = ''; }
+      else if (event.key === 'ArrowUp') { event.preventDefault(); if (historyIndex > 0) input.value = history[--historyIndex]; }
+      else if (event.key === 'ArrowDown') { event.preventDefault(); if (historyIndex < history.length - 1) input.value = history[++historyIndex]; else { historyIndex = history.length; input.value = ''; } }
+      else if (event.key === 'Tab') { event.preventDefault(); const value = input.value.trim(); const choices = ['help','pwd','ls','cd','cat','tree','find','whoami','uname','open','clear','history']; const match = choices.find(choice => choice.startsWith(value)); if (match) input.value = match + (match === 'cd' || match === 'cat' || match === 'open' ? ' ' : ''); }
     });
+    updatePrompt();
   })();
 </script></body></html>
