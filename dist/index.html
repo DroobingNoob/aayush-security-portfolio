@@ -107,8 +107,8 @@
       try { localStorage.setItem('aayush-studio-mode', enabled ? 'on' : 'off'); } catch (_) {}
       if (enabled) document.querySelectorAll('section').forEach((section, index) => { section.classList.add('reveal'); setTimeout(() => section.classList.add('visible'), 120 + index * 65); });
     };
-    try { if (localStorage.getItem('aayush-studio-mode') === 'on') setStudio(true); } catch (_) {}
-    toggle.addEventListener('click', () => setStudio(!body.classList.contains('studio-mode')));
+    try { localStorage.removeItem('aayush-studio-mode'); } catch (_) {}
+    toggle.addEventListener('click', () => { window.location.href = 'studio.html'; });
     window.addEventListener('scroll', () => {
       if (!body.classList.contains('studio-mode') || !portrait) return;
       const y = Math.min(window.scrollY, 1000);
