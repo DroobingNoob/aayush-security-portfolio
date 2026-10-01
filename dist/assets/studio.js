@@ -148,31 +148,4 @@
   });
   deckSurface.addEventListener('pointercancel', () => {swipe = null;});
 
-  const distance = document.getElementById('geoDistance');
-  function updateLocation() {
-    const value = Number(distance.value);
-    const unlocked = value <= 25;
-    document.getElementById('geoStage').classList.toggle('unlocked', unlocked);
-    document.getElementById('geoMarker').style.setProperty('--offset', value / 100 * 42 + '%');
-    document.getElementById('geoDistanceLabel').textContent = value + ' m away';
-    document.getElementById('geoResult').textContent = unlocked
-      ? 'Unlocked · inside the example access zone.'
-      : 'Locked · outside the example access zone.';
-  }
-  distance.addEventListener('input', updateLocation);
-  updateLocation();
-
-  const samples = {
-    normal: {verdict: 'allow', sample: 'GET /articles?topic=security', result: 'Allowed · this sample contains an ordinary search value.'},
-    sqli: {verdict: 'block', sample: "GET /login?id=1 OR 1=1", result: 'Blocked · the example rule flags a SQL condition in the input.'},
-    xss: {verdict: 'block', sample: 'GET /search?q=<script>…</script>', result: 'Blocked · the example rule flags an embedded script tag.'}
-  };
-  const requestButtons = [...document.querySelectorAll('[data-request]')];
-  requestButtons.forEach(button => button.addEventListener('click', () => {
-    const sample = samples[button.dataset.request];
-    requestButtons.forEach(item => item.setAttribute('aria-pressed', String(item === button)));
-    document.getElementById('requestStage').dataset.verdict = sample.verdict;
-    document.getElementById('requestSample').textContent = sample.sample;
-    document.getElementById('requestResult').textContent = sample.result;
-  }));
 })();

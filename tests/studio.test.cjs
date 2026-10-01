@@ -41,8 +41,6 @@ function setup(reduced=false) {
   });
   const cards=Array.from({length:3},()=>new Element());
   const pickers=Array.from({length:3},()=>new Element());
-  const traffic=['normal','sqli','xss'].map(request=>{const el=new Element();el.dataset.request=request;return el;});
-  nodes.geoDistance.value='60';
   const buttons=[new Element(),new Element()];
   buttons.forEach((el,index)=>el.setAttribute('aria-controls','project-note-'+(index+1)));
   const hero=new Element();hero.querySelector=()=>new Element();
@@ -50,11 +48,11 @@ function setup(reduced=false) {
   const document={
     getElementById:id=>{assert.ok(nodes[id], 'Missing ID: '+id);return nodes[id];},
     querySelector:selector=>selector==='.hero'?hero:progress,
-    querySelectorAll:selector=>({'.tilt-card':cards,'.project-action':buttons,'.system-layer':layers,'#credentialDeck article':cards,'[data-select-layer]':pickers,'[data-request]':traffic}[selector])
+    querySelectorAll:selector=>({'.tilt-card':cards,'.project-action':buttons,'.system-layer':layers,'#credentialDeck article':cards,'[data-select-layer]':pickers}[selector])
   };
   const frames=[];
   vm.runInNewContext(script,{document,matchMedia:()=>({matches:reduced}),addEventListener:()=>{},requestAnimationFrame:callback=>{frames.push(callback);return frames.length;}});
-  return {nodes,scroller,requests,layers,cards,buttons,pickers,traffic,flush:()=>{while(frames.length)frames.shift()();}};
+  return {nodes,scroller,requests,layers,cards,buttons,pickers,flush:()=>{while(frames.length)frames.shift()();}};
 }
 for(const reduced of [false,true]) {
   const state=setup(reduced);
@@ -84,16 +82,6 @@ for(const reduced of [false,true]) {
   assert.equal(nodes['project-note-1'].hidden,true);
   state.pickers[1].dispatch('click');
   assert.equal(layers[1].attrs['aria-pressed'],'true','Flat controls select depth layers on touch');
-  for(const [value,unlocked] of [[60,false],[25,true],[0,true],[26,false]]) {
-    nodes.geoDistance.value=String(value);nodes.geoDistance.dispatch('input');
-    assert.equal(nodes.geoStage.classes.has('unlocked'),unlocked);
-  }
-  state.traffic[1].dispatch('click');
-  assert.equal(nodes.requestStage.dataset.verdict,'block');
-  state.traffic[2].dispatch('click');
-  assert.ok(nodes.requestSample.textContent.includes('<script>'),'Example payload is plain text');
-  state.traffic[0].dispatch('click');
-  assert.equal(nodes.requestStage.dataset.verdict,'allow');
   nodes.credentialDeck.dispatch('pointerdown',{pointerType:'touch',isPrimary:true,pointerId:1,clientX:180,clientY:40});
   nodes.credentialDeck.dispatch('pointerup',{pointerId:1,clientX:80,clientY:45});
   assert.equal(cards[1].dataset.front,'true','Horizontal touch swipe advances the deck');
@@ -109,4 +97,4 @@ assert.equal((html.match(/<script/g)||[]).length,1,'A single controller owns Stu
 assert.ok(!/settleTimer|scrollend|setTimeout|scrollIntoView/.test(script),'No trailing scroll feedback loop');
 assert.match(css,/#studioScroll\{[^}]*height:100dvh[^}]*overflow-y:auto[^}]*scroll-snap-type:y mandatory/);
 assert.match(css,/scroll-snap-align:start;scroll-snap-stop:always/);
-console.log('PASS: scroll, chapter navigation, layers, location boundary, request samples, disclosures, and touch swipe/cancel controls, with normal and reduced motion.');
+console.log('PASS: scroll, chapter navigation, layers, disclosures, and touch swipe/cancel controls work with normal and reduced motion.');
