@@ -20,6 +20,10 @@
   <style>
     html{overscroll-behavior-y:none;scroll-snap-type:y mandatory}.scene.is-active .chapter,.scene.is-active .project-stack,.scene.is-active .flow-card{animation:none!important}.scene{scroll-snap-stop:always}
   </style>
+  <style>@media(max-width:760px){html{scroll-snap-type:y mandatory}}</style>
+  <script>
+    document.addEventListener('DOMContentLoaded',()=>{if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;const scenes=[...document.querySelectorAll('.scene')];let settleTimer;const settle=()=>{const closest=scenes.reduce((best,scene)=>Math.abs(scene.offsetTop-scrollY)<Math.abs(best.offsetTop-scrollY)?scene:best,scenes[0]);if(Math.abs(closest.offsetTop-scrollY)>8)scrollTo({top:closest.offsetTop,behavior:'smooth'})};addEventListener('scroll',()=>{clearTimeout(settleTimer);settleTimer=setTimeout(settle,140)},{passive:true});addEventListener('scrollend',settle,{passive:true})});
+  </script>
 </head>
 <body><div class="noise"></div><div class="progress"></div><div class="signal-state" aria-live="polite"><b id="signalNumber">01</b><span id="signalLabel">INTRO</span></div><nav class="nav"><span>AD / FRONTEND STUDY_01</span><a class="back" href="index.html">← STANDARD PORTFOLIO</a></nav>
 <main><div class="depth-lens" aria-hidden="true"><span></span><span></span><span></span></div><script>document.addEventListener('DOMContentLoaded',()=>{const scenes=[...document.querySelectorAll('.scene')],lens=document.querySelector('.depth-lens'),reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;const updateDepth=()=>{let focused=0;scenes.forEach((scene,index)=>{const box=scene.getBoundingClientRect(),progress=(innerHeight-box.top)/(innerHeight+box.height);scene.style.setProperty('--scene-drift',((progress-.5)*22)+'px');if(box.top<innerHeight*.52&&box.bottom>innerHeight*.48)focused=index});lens.classList.toggle('active',focused===2)};addEventListener('scroll',updateDepth,{passive:true});addEventListener('pointermove',event=>{if(reduce||innerWidth<760)return;const x=(event.clientX/innerWidth-.5)*18,y=(event.clientY/innerHeight-.5)*-12;lens.style.transform='rotateX('+y+'deg) rotateY('+x+'deg)'});updateDepth()})</script>
