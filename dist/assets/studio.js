@@ -94,12 +94,17 @@
     'Normalizes evidence across scanners and supports false-positive assessment.',
     'Brings findings into context with risk scoring and attack-path correlation.'
   ];
-  layers.forEach((button, index) => button.addEventListener('click', () => {
+  const layerPickers = [...document.querySelectorAll('[data-select-layer]')];
+  function selectLayer(index) {
+    const button = layers[index];
     layers.forEach(layer => layer.setAttribute('aria-pressed', String(layer === button)));
+    layerPickers.forEach((picker, i) => picker.setAttribute('aria-pressed', String(i === index)));
     document.getElementById('layerTag').textContent = button.querySelector('span').textContent;
     document.getElementById('layerTitle').textContent = button.querySelector('strong').textContent;
     document.getElementById('layerDescription').textContent = descriptions[index];
-  }));
+  }
+  layers.forEach((button, index) => button.addEventListener('click', () => selectLayer(index)));
+  layerPickers.forEach((button, index) => button.addEventListener('click', () => selectLayer(index)));
   const stack = document.getElementById('layerStack');
   document.getElementById('rotation').addEventListener('input', event => {
     stack.style.setProperty('--rotation', event.target.value + 'deg');
@@ -126,4 +131,48 @@
   document.getElementById('previousCredential').addEventListener('click', () => {selected = (selected - 1 + deck.length) % deck.length;renderDeck();});
   document.getElementById('nextCredential').addEventListener('click', () => {selected = (selected + 1) % deck.length;renderDeck();});
   renderDeck();
+
+  const deckSurface = document.getElementById('credentialDeck');
+  let swipe = null;
+  deckSurface.addEventListener('pointerdown', event => {
+    if (event.pointerType === 'mouse' || !event.isPrimary) return;
+    swipe = {x: event.clientX, y: event.clientY, id: event.pointerId};
+  });
+  deckSurface.addEventListener('pointerup', event => {
+    if (!swipe || swipe.id !== event.pointerId) return;
+    const dx = event.clientX - swipe.x, dy = event.clientY - swipe.y;
+    swipe = null;
+    if (Math.abs(dx) < 45 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
+    selected = (selected + (dx < 0 ? 1 : -1) + deck.length) % deck.length;
+    renderDeck();
+  });
+  deckSurface.addEventListener('pointercancel', () => {swipe = null;});
+
+  const distance = document.getElementById('geoDistance');
+  function updateLocation() {
+    const value = Number(distance.value);
+    const unlocked = value <= 25;
+    document.getElementById('geoStage').classList.toggle('unlocked', unlocked);
+    document.getElementById('geoMarker').style.setProperty('--offset', value / 100 * 42 + '%');
+    document.getElementById('geoDistanceLabel').textContent = value + ' m away';
+    document.getElementById('geoResult').textContent = unlocked
+      ? 'Unlocked · inside the example access zone.'
+      : 'Locked · outside the example access zone.';
+  }
+  distance.addEventListener('input', updateLocation);
+  updateLocation();
+
+  const samples = {
+    normal: {verdict: 'allow', sample: 'GET /articles?topic=security', result: 'Allowed · this sample contains an ordinary search value.'},
+    sqli: {verdict: 'block', sample: "GET /login?id=1 OR 1=1", result: 'Blocked · the example rule flags a SQL condition in the input.'},
+    xss: {verdict: 'block', sample: 'GET /search?q=<script>…</script>', result: 'Blocked · the example rule flags an embedded script tag.'}
+  };
+  const requestButtons = [...document.querySelectorAll('[data-request]')];
+  requestButtons.forEach(button => button.addEventListener('click', () => {
+    const sample = samples[button.dataset.request];
+    requestButtons.forEach(item => item.setAttribute('aria-pressed', String(item === button)));
+    document.getElementById('requestStage').dataset.verdict = sample.verdict;
+    document.getElementById('requestSample').textContent = sample.sample;
+    document.getElementById('requestResult').textContent = sample.result;
+  }));
 })();

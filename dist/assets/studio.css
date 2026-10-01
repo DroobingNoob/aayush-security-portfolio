@@ -82,6 +82,124 @@ button:focus-visible,a:focus-visible,input:focus-visible,#studioScroll:focus-vis
  .nav>span{font-size:11px;max-width:100px}
  .experience-grid{grid-template-columns:1fr}
 }
+/* Project concepts stay in the portfolio; every control also works by touch. */
+#projects.scene{grid-template-columns:minmax(0,1fr);gap:30px}
+#projects .chapter{max-width:900px}
+#projects .chapter h2{margin-bottom:20px}
+#projects .statement{max-width:700px}
+#projects .project-orbit{grid-template-columns:repeat(2,minmax(0,1fr));width:100%;max-width:none;align-items:start}
+#projects .orbit-card{transform:none;overflow:visible}
+.mini-lab{margin-top:24px;padding-top:22px;border-top:1px solid var(--line)}
+.lab-caption{font:12px 'DM Mono';letter-spacing:.06em;color:var(--lime)}
+.lab-label{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:14px;margin:16px 0 4px}
+.lab-label output{color:var(--lime);font-variant-numeric:tabular-nums}
+.mini-lab input[type=range]{width:100%;height:44px;accent-color:var(--lime);margin:0;cursor:ew-resize}
+.mini-lab .lab-result{font-size:14px;min-height:3.2em;line-height:1.6;margin:12px 0;color:var(--ink)}
+.mini-lab .lab-note{font-size:12px;line-height:1.65;color:var(--muted)}
+.geo-stage{position:relative;height:170px;perspective:800px;display:flex;align-items:center;gap:20px;margin-top:15px}
+.geo-grid{position:relative;flex:1;min-width:0;height:140px;background:linear-gradient(#b68cff1a 1px,transparent 1px),linear-gradient(90deg,#b68cff1a 1px,transparent 1px);background-size:20px 20px;border:1px solid #b68cff33;border-radius:12px;transform:rotateX(25deg)}
+.geo-zone{position:absolute;left:39.5%;top:50%;width:21%;aspect-ratio:1;transform:translateY(-50%);border:1px solid #cbff7999;border-radius:50%;background:#cbff791a}
+.geo-marker{position:absolute;top:calc(50% - 6px);left:calc(50% - 6px + var(--offset,25%));width:12px;height:12px;background:#f1caff;box-shadow:0 0 16px #b68cff;border-radius:50%;transition:left .1s linear}
+.geo-origin{position:absolute;left:10px;bottom:9px;font:10px 'DM Mono';color:var(--muted)}
+.geo-card{position:relative;width:116px;height:128px;flex-shrink:0;transform-style:preserve-3d;transform:rotateY(-15deg);transition:transform .6s cubic-bezier(.2,.8,.2,1)}
+.geo-face{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:14px;border:1px solid #ba9cdd80;border-radius:10px;background:linear-gradient(130deg,#4b2b71,#16102c);font:12px/1.6 'DM Mono';backface-visibility:hidden;box-shadow:10px 16px 30px #0006}
+.geo-face span{color:var(--muted)}
+.geo-back{transform:rotateY(180deg);border-color:#cbff7999;background:linear-gradient(130deg,#243d38,#0d2527)}
+.geo-back span{color:var(--lime)}
+.geo-stage.unlocked .geo-card{transform:rotateY(180deg)}
+.request-picker,.layer-picker{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0}
+.request-picker button,.layer-picker button{border:1px solid #bda0dd75;border-radius:7px;background:#231435;color:var(--ink);padding:10px 12px;min-height:44px;font:12px/1.3 'DM Mono';cursor:pointer}
+.request-picker button[aria-pressed=true],.layer-picker button[aria-pressed=true]{background:#c9ff8120;color:var(--lime);border-color:var(--lime)}
+.layer-picker{justify-content:center}
+.request-stage{height:104px;display:flex;align-items:center;justify-content:space-between;position:relative;perspective:800px}
+.request-stage:before{content:"";position:absolute;left:0;right:0;top:50%;border-top:1px dashed #a785d077}
+.request-stage>span{z-index:1;font:12px 'DM Mono';padding:14px 10px;border:1px solid #ba9cdd80;background:#1e1535;border-radius:8px;transform:rotateY(-18deg);box-shadow:6px 10px 22px #0007;transition:transform .4s ease,border-color .4s ease,opacity .4s ease}
+.request-stage .request-gate{padding:24px 12px;border-color:var(--lime);color:var(--lime)}
+.request-stage[data-verdict=block] .request-gate{transform:rotateY(15deg);border-color:#ffad9d;color:#ffad9d}
+.request-stage[data-verdict=block] .request-destination{opacity:.35;transform:translateZ(-30px)}
+.request-stage[data-verdict=block] .request-packet{transform:translateX(14px) rotateY(15deg)}
+.request-sample{display:block;padding:12px;border-radius:7px;background:#060510;color:#d6c9e5;font:12px/1.7 'DM Mono';overflow-wrap:anywhere;min-height:65px}
+.scene>*{min-width:0}
+.hero-art{pointer-events:none}
+.layer-controls input{height:44px}
+.chapter-controls{bottom:calc(12px + env(safe-area-inset-bottom));max-width:calc(100% - 24px)}
+.chapter-controls button{width:44px;height:44px}
+.nav{padding-top:max(20px,env(safe-area-inset-top));padding-left:max(5vw,env(safe-area-inset-left));padding-right:max(5vw,env(safe-area-inset-right))}
+.nav .back{min-height:44px;display:inline-flex;align-items:center}
+#credentialDeck{touch-action:pan-y}
+#studioScroll{scroll-padding-top:0}
+
+/* Tablet compositions: use the width for cards, keep headings beside portrait. */
+@media(min-width:621px) and (max-width:1100px){
+ .scene{padding:110px 6vw 100px}
+ .scene:not(.hero):not(.closing){grid-template-columns:minmax(0,1fr);gap:32px}
+ .hero{display:grid;grid-template-columns:1.05fr .95fr;gap:20px}
+ .hero-copy{max-width:100%;padding-bottom:0}
+ .hero h1{font-size:clamp(3.5rem,8vw,6rem)}
+ .hero-art{position:relative;width:100%;height:440px;max-height:60vh;right:auto;bottom:auto;opacity:1}
+ .scroll-cue{display:none}
+ .flow{grid-template-columns:repeat(3,minmax(0,1fr))}
+ .flow-card{padding:18px}
+ .flow-card p{font-size:.94rem}
+ .experience-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ #credentials .chapter{grid-row:auto}
+ .credential-drift{width:min(100%,560px);justify-self:center;height:340px}
+ .deck-controls{grid-column:1;margin-top:0}
+ .system-explorer{width:min(100%,600px);justify-self:center}
+ .project-title{font-size:clamp(3.5rem,7vw,5rem)}
+}
+@media(max-width:620px){
+ #studioScroll{scrollbar-gutter:auto}
+ .scene{padding:calc(90px + env(safe-area-inset-top)) 22px calc(100px + env(safe-area-inset-bottom))}
+ .scene:not(.hero):not(.closing){grid-template-columns:minmax(0,1fr)}
+ .hero{display:flex;flex-direction:column;align-items:stretch;justify-content:center;gap:12px}
+ .hero-copy{padding-bottom:0;max-width:none}
+ .hero h1{font-size:clamp(3rem,13.5vw,5rem);letter-spacing:-.065em}
+ .hero-art{position:relative;right:auto;bottom:auto;width:100%;height:310px;height:clamp(220px,38svh,360px);opacity:1}
+ .hero p{font-size:1rem}
+ .eyebrow{font-size:11px;line-height:1.7;letter-spacing:.07em}
+ .nav{gap:12px;padding:calc(10px + env(safe-area-inset-top)) 18px 14px}
+ .nav>span{max-width:82px;font-size:10px;line-height:1.5}
+ .nav .back{font-size:11px;padding:8px 10px;letter-spacing:0}
+ .chapter h2{font-size:clamp(2.3rem,10vw,3.5rem);line-height:1.05}
+ .project-title{font-size:clamp(2.8rem,12vw,4rem)}
+ #projects .project-orbit{grid-template-columns:minmax(0,1fr)}
+ .orbit-card{padding:20px}
+ .layer-stack{width:70%;height:170px}
+ .system-layer{padding:14px}
+ .system-layer:nth-child(1){left:-12px;right:12px}
+ .system-layer:nth-child(3){left:12px;right:-12px}
+ .system-layer strong{font-size:18px}
+ .system-layer small{font-size:10px}
+ .layer-stack.exploded{--separation:72px}
+ .layer-viewport{height:310px}
+ .layer-controls{display:grid;grid-template-columns:minmax(0,1fr) auto}
+ .layer-controls label{grid-column:1 / -1}
+ .layer-controls input{width:100%;min-width:0}
+ .layer-picker button{flex:1}
+ .credential-drift{height:24rem}
+ .credential-drift article{inset:20px 10% 20px 0;padding:22px}
+ .credential-drift article h3{font-size:1.7rem;line-height:1.15;margin-top:30px}
+ .deck-controls{gap:12px;flex-wrap:wrap}
+ .contact-panel{display:grid;gap:12px}
+ .contact-panel a{font-size:12px;min-height:48px;display:flex;align-items:center}
+ .closing h2{font-size:clamp(2.3rem,10vw,3.6rem)}
+}
+@media(max-width:380px){
+ .scene{padding-left:16px;padding-right:16px}
+ .orbit-card{padding:16px}
+ .geo-stage{gap:12px}
+ .geo-card{width:100px}
+ .layer-controls{grid-template-columns:1fr}
+ .layer-controls label{grid-column:1}
+}
+@media(max-height:540px) and (orientation:landscape){
+ .scene{padding-top:90px;padding-bottom:90px}
+ .hero{display:grid;grid-template-columns:1.1fr .9fr}
+ .hero h1{font-size:clamp(2.8rem,7vw,4rem)}
+ .hero-copy{padding-bottom:0}
+ .hero-art{position:relative;right:auto;bottom:auto;width:100%;height:270px}
+}
 @media(prefers-reduced-motion:reduce){
  #studioScroll{scroll-behavior:auto}
  *,*:before,*:after{animation:none!important;transition:none!important}
