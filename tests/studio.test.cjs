@@ -17,7 +17,7 @@ class Element {
       const value = force === undefined ? !this.classes.has(key) : force;
       value ? this.classes.add(key) : this.classes.delete(key);
       return value;
-    }};
+    },contains:key=>this.classes.has(key)};
   }
   addEventListener(type, callback) {(this.listeners[type] ||= []).push(callback);}
   dispatch(type, extra={}) {(this.listeners[type] || []).forEach(callback=>callback({target:this,currentTarget:this,...extra}));}
@@ -36,27 +36,24 @@ function setup(reduced=false) {
   });
   const requests=[];scroller.scrollTo=value=>requests.push(value);
   scroller.querySelectorAll=()=>scenes;
-  const layers=Array.from({length:3},(_,index)=>{
-    const el=new Element();el.querySelector=()=>({textContent:'Layer '+index});return el;
-  });
   const cards=Array.from({length:3},()=>new Element());
-  const pickers=Array.from({length:3},()=>new Element());
-  const buttons=[new Element(),new Element()];
-  buttons.forEach((el,index)=>el.setAttribute('aria-controls','project-note-'+(index+1)));
+  const projectSlides=Array.from({length:3},()=>new Element());
+  const projectTabs=Array.from({length:3},()=>new Element());
+  const projectModels=Array.from({length:3},()=>new Element());
   const hero=new Element();hero.querySelector=()=>new Element();
   const progress=new Element();
   const document={
     getElementById:id=>{assert.ok(nodes[id], 'Missing ID: '+id);return nodes[id];},
     querySelector:selector=>selector==='.hero'?hero:progress,
-    querySelectorAll:selector=>({'.tilt-card':cards,'.project-action':buttons,'.system-layer':layers,'#credentialDeck article':cards,'[data-select-layer]':pickers}[selector])
+    querySelectorAll:selector=>({'.tilt-card':cards,'.project-slide':projectSlides,'.project-tab':projectTabs,'.project-model':projectModels,'#credentialDeck article':cards}[selector])
   };
   const frames=[];
   vm.runInNewContext(script,{document,matchMedia:()=>({matches:reduced}),addEventListener:()=>{},requestAnimationFrame:callback=>{frames.push(callback);return frames.length;}});
-  return {nodes,scroller,requests,layers,cards,buttons,pickers,flush:()=>{while(frames.length)frames.shift()();}};
+  return {nodes,scroller,requests,cards,projectSlides,projectTabs,projectModels,flush:()=>{while(frames.length)frames.shift()();}};
 }
 for(const reduced of [false,true]) {
   const state=setup(reduced);
-  const {nodes,scroller,requests,layers,cards,buttons}=state;
+  const {nodes,scroller,requests,cards,projectSlides,projectTabs,projectModels}=state;
   // Repeated momentum and externally repositioned scrolls must never start a new scroll.
   for(const position of [230,780,1200,803,2700,0]) {
     scroller.scrollTop=position;scroller.dispatch('scroll');state.flush();
@@ -69,19 +66,17 @@ for(const reduced of [false,true]) {
   assert.equal(cards[1].dataset.front,'true');
   nodes.previousCredential.dispatch('click');
   assert.equal(cards[0].dataset.front,'true');
-  layers[0].dispatch('click');
-  assert.equal(layers[0].attrs['aria-pressed'],'true');
-  assert.equal(layers[2].attrs['aria-pressed'],'false');
-  nodes.explodeLayers.dispatch('click');
-  assert.equal(nodes.explodeLayers.attrs['aria-pressed'],'true');
-  nodes.rotation.value='24';nodes.rotation.dispatch('input');
-  assert.equal(nodes.layerStack.styles['--rotation'],'24deg');
-  buttons[0].dispatch('click');
-  assert.equal(nodes['project-note-1'].hidden,false);
-  buttons[0].dispatch('click');
-  assert.equal(nodes['project-note-1'].hidden,true);
-  state.pickers[1].dispatch('click');
-  assert.equal(layers[1].attrs['aria-pressed'],'true','Flat controls select depth layers on touch');
+  nodes.nextProject.dispatch('click');
+  assert.equal(projectTabs[1].attrs['aria-pressed'],'true','Carousel changes the selected project');
+  assert.equal(projectSlides[1].attrs['aria-hidden'],'false');
+  nodes.projectModelAction.dispatch('click');
+  assert.equal(nodes.projectModelAction.attrs['aria-pressed'],'true');
+  assert.ok(projectModels[1].classList.contains('is-expanded'),'Project action changes only the selected system model');
+  nodes.projectRotation.value='24';nodes.projectRotation.dispatch('input');
+  assert.equal(projectModels[1].styles['--project-rotation'],'24deg');
+  nodes.projectCarouselStage.dispatch('pointerdown',{pointerType:'touch',isPrimary:true,pointerId:9,clientX:180,clientY:40});
+  nodes.projectCarouselStage.dispatch('pointerup',{pointerId:9,clientX:80,clientY:45});
+  assert.equal(projectTabs[2].attrs['aria-pressed'],'true','Horizontal swipe advances the project carousel');
   nodes.credentialDeck.dispatch('pointerdown',{pointerType:'touch',isPrimary:true,pointerId:1,clientX:180,clientY:40});
   nodes.credentialDeck.dispatch('pointerup',{pointerId:1,clientX:80,clientY:45});
   assert.equal(cards[1].dataset.front,'true','Horizontal touch swipe advances the deck');
@@ -97,4 +92,4 @@ assert.equal((html.match(/<script/g)||[]).length,1,'A single controller owns Stu
 assert.ok(!/settleTimer|scrollend|setTimeout|scrollIntoView/.test(script),'No trailing scroll feedback loop');
 assert.match(css,/#studioScroll\{[^}]*height:100dvh[^}]*overflow-y:auto[^}]*scroll-snap-type:y mandatory/);
 assert.match(css,/scroll-snap-align:start;scroll-snap-stop:always/);
-console.log('PASS: scroll, chapter navigation, layers, disclosures, and touch swipe/cancel controls work with normal and reduced motion.');
+console.log('PASS: scroll, chapter navigation, project carousel models, and touch swipe/cancel controls work with normal and reduced motion.');

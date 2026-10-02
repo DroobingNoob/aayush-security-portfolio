@@ -1,7 +1,7 @@
 (() => {
   'use strict';
   const scroller = document.getElementById('studioScroll');
-  const scenes = [...scroller.querySelectorAll('.scene')];
+  const scenes = [...scroller.querySelectorAll('.scene')].filter(scene => scene.id !== 'obsidian');
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
   const previous = document.getElementById('previousChapter');
   const next = document.getElementById('nextChapter');
@@ -77,43 +77,61 @@
   });
   hero.addEventListener('pointerleave', () => {portrait.style.removeProperty('--px');portrait.style.removeProperty('--ry');});
 
-  document.querySelectorAll('.project-action').forEach(button => {
-    button.addEventListener('click', () => {
-      const open = button.getAttribute('aria-expanded') !== 'true';
-      button.setAttribute('aria-expanded', String(open));
-      button.textContent = open ? 'HIDE BUILD NOTES −' : 'VIEW BUILD NOTES +';
-      const note = document.getElementById(button.getAttribute('aria-controls'));
-      note.hidden = !open;
-      note.classList.toggle('open', open);
-    });
-  });
-
-  const layers = [...document.querySelectorAll('.system-layer')];
-  const descriptions = [
-    'Collects findings from Nmap, OWASP ZAP, and Nuclei for authorized security assessments.',
-    'Normalizes evidence across scanners and supports false-positive assessment.',
-    'Brings findings into context with risk scoring and attack-path correlation.'
+  // One project record: every system has a model that explains its security idea.
+  const projectSlides = [...document.querySelectorAll('.project-slide')];
+  const projectTabs = [...document.querySelectorAll('.project-tab')];
+  const projectModels = [...document.querySelectorAll('.project-model')];
+  const projectRotation = document.getElementById('projectRotation');
+  const projectAction = document.getElementById('projectModelAction');
+  const projectStatus = document.getElementById('projectModelStatus');
+  const projectCounter = document.getElementById('projectCounter');
+  const projectCopy = [
+    {action: 'Separate architecture layers', active: 'Stack architecture layers', status: 'Three assessment layers, connected in one model.', activeStatus: 'The scanners, normalized evidence, and contextual risk are separated for inspection.'},
+    {action: 'Show location boundary', active: 'Hide location boundary', status: 'A user key is paired with the original geographic context.', activeStatus: 'The illuminated boundary represents the location constraint required for decryption.'},
+    {action: 'Trace blocked request', active: 'Reset request path', status: 'Each request is inspected before it can reach the destination.', activeStatus: 'The request is diverted at the inspection gate when a threat pattern is found.'}
   ];
-  const layerPickers = [...document.querySelectorAll('[data-select-layer]')];
-  function selectLayer(index) {
-    const button = layers[index];
-    layers.forEach(layer => layer.setAttribute('aria-pressed', String(layer === button)));
-    layerPickers.forEach((picker, i) => picker.setAttribute('aria-pressed', String(i === index)));
-    document.getElementById('layerTag').textContent = button.querySelector('span').textContent;
-    document.getElementById('layerTitle').textContent = button.querySelector('strong').textContent;
-    document.getElementById('layerDescription').textContent = descriptions[index];
+  let selectedProject = 0, projectExpanded = false;
+  function renderProject() {
+    projectSlides.forEach((slide, index) => {
+      const activeSlide = index === selectedProject;
+      slide.classList.toggle('is-active', activeSlide);
+      slide.inert = !activeSlide;
+      slide.setAttribute('aria-hidden', String(!activeSlide));
+    });
+    projectTabs.forEach((tab, index) => tab.setAttribute('aria-pressed', String(index === selectedProject)));
+    projectModels.forEach((model, index) => model.classList.toggle('is-expanded', index === selectedProject && projectExpanded));
+    const detail = projectCopy[selectedProject];
+    projectAction.setAttribute('aria-pressed', String(projectExpanded));
+    projectAction.textContent = projectExpanded ? detail.active : detail.action;
+    projectStatus.textContent = projectExpanded ? detail.activeStatus : detail.status;
+    projectCounter.textContent = (selectedProject + 1) + ' / ' + projectSlides.length;
+    projectRotation.value = '-12';
+    projectModels[selectedProject].style.setProperty('--project-rotation', '-12deg');
   }
-  layers.forEach((button, index) => button.addEventListener('click', () => selectLayer(index)));
-  layerPickers.forEach((button, index) => button.addEventListener('click', () => selectLayer(index)));
-  const stack = document.getElementById('layerStack');
-  document.getElementById('rotation').addEventListener('input', event => {
-    stack.style.setProperty('--rotation', event.target.value + 'deg');
+  function chooseProject(index) {
+    selectedProject = (index + projectSlides.length) % projectSlides.length;
+    projectExpanded = false;
+    renderProject();
+  }
+  projectTabs.forEach((tab, index) => tab.addEventListener('click', () => chooseProject(index)));
+  document.getElementById('previousProject').addEventListener('click', () => chooseProject(selectedProject - 1));
+  document.getElementById('nextProject').addEventListener('click', () => chooseProject(selectedProject + 1));
+  projectRotation.addEventListener('input', event => projectModels[selectedProject].style.setProperty('--project-rotation', event.target.value + 'deg'));
+  projectAction.addEventListener('click', () => {projectExpanded = !projectExpanded;renderProject();});
+  const projectSurface = document.getElementById('projectCarouselStage');
+  let projectSwipe = null;
+  projectSurface.addEventListener('pointerdown', event => {
+    if (event.pointerType === 'mouse' || !event.isPrimary) return;
+    projectSwipe = {x: event.clientX, y: event.clientY, id: event.pointerId};
   });
-  document.getElementById('explodeLayers').addEventListener('click', event => {
-    const open = stack.classList.toggle('exploded');
-    event.currentTarget.setAttribute('aria-pressed', String(open));
-    event.currentTarget.textContent = open ? 'Stack layers' : 'Separate layers';
+  projectSurface.addEventListener('pointerup', event => {
+    if (!projectSwipe || projectSwipe.id !== event.pointerId) return;
+    const dx = event.clientX - projectSwipe.x, dy = event.clientY - projectSwipe.y;
+    projectSwipe = null;
+    if (Math.abs(dx) >= 45 && Math.abs(dx) > Math.abs(dy) * 1.5) chooseProject(selectedProject + (dx < 0 ? 1 : -1));
   });
+  projectSurface.addEventListener('pointercancel', () => {projectSwipe = null;});
+  renderProject();
 
   const deck = [...document.querySelectorAll('#credentialDeck article')];
   let selected = 0;
