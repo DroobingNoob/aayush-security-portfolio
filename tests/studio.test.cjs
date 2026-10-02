@@ -41,7 +41,6 @@ function setup(reduced=false) {
   const cards=Array.from({length:3},()=>new Element());
   const credentialCards=Array.from({length:19},(_,index)=>{const card=new Element();card.dataset.kind=index<14?'credential':index<18?'challenge':'practice';return card;});
   const credentialFilters=['all','credential','challenge','practice'].map(filter=>{const button=new Element();button.dataset.credentialFilter=filter;return button;});
-  const credentialIndex=Array.from({length:19},()=>new Element());
   const projectSlides=Array.from({length:3},()=>new Element());
   const projectTabs=Array.from({length:3},()=>new Element());
   const projectModels=Array.from({length:3},()=>new Element());
@@ -50,15 +49,15 @@ function setup(reduced=false) {
   const document={
     getElementById:id=>{assert.ok(nodes[id], 'Missing ID: '+id);return nodes[id];},
     querySelector:selector=>selector==='.hero'?hero:progress,
-    querySelectorAll:selector=>({'.tilt-card':cards,'.project-slide':projectSlides,'.project-tab':projectTabs,'.project-model':projectModels,'#credentialDeck article':credentialCards,'[data-credential-filter]':credentialFilters,'[data-credential-index]':credentialIndex}[selector])
+    querySelectorAll:selector=>({'.tilt-card':cards,'.project-slide':projectSlides,'.project-tab':projectTabs,'.project-model':projectModels,'#credentialDeck article':credentialCards,'[data-credential-filter]':credentialFilters}[selector])
   };
   const frames=[];
   vm.runInNewContext(script,{document,matchMedia:()=>({matches:reduced}),addEventListener:()=>{},requestAnimationFrame:callback=>{frames.push(callback);return frames.length;}});
-  return {nodes,scroller,requests,cards,credentialCards,credentialFilters,credentialIndex,projectSlides,projectTabs,projectModels,flush:()=>{while(frames.length)frames.shift()();}};
+  return {nodes,scroller,requests,cards,credentialCards,credentialFilters,projectSlides,projectTabs,projectModels,flush:()=>{while(frames.length)frames.shift()();}};
 }
 for(const reduced of [false,true]) {
   const state=setup(reduced);
-  const {nodes,scroller,requests,cards,credentialCards,credentialFilters,credentialIndex,projectSlides,projectTabs,projectModels}=state;
+  const {nodes,scroller,requests,cards,credentialCards,credentialFilters,projectSlides,projectTabs,projectModels}=state;
   // Repeated momentum and externally repositioned scrolls must never start a new scroll.
   for(const position of [230,780,1200,803,2700,0]) {
     scroller.scrollTop=position;scroller.dispatch('scroll');state.flush();
@@ -73,32 +72,24 @@ for(const reduced of [false,true]) {
   assert.equal(credentialCards[0].dataset.front,'true');
   credentialFilters[2].dispatch('click');
   assert.equal(nodes.credentialCounter.textContent,'1 / 4','Challenge filter exposes every CTF and challenge');
-  credentialIndex[16].dispatch('click');
-  assert.equal(credentialCards[16].dataset.front,'true','Credential atlas jumps directly to a visible record');
+  nodes.nextCredential.dispatch('click');
+  assert.equal(credentialCards[15].dataset.front,'true','Next navigates within the selected filter');
   credentialFilters[0].dispatch('click');
   assert.equal(nodes.credentialCounter.textContent,'1 / 19','All records return to the full credential atlas');
   nodes.nextProject.dispatch('click');
   assert.equal(projectTabs[1].attrs['aria-pressed'],'true','Carousel changes the selected project');
   assert.equal(projectSlides[1].attrs['aria-hidden'],'false');
-  nodes.obsAnalyze.dispatch('click');
-  assert.equal(nodes.obsRaw.hidden,true);
-  assert.equal(nodes.obsAssessment.hidden,false);
-  assert.equal(nodes.obsFinding0.focused,true,'Focus moves into the opened assessment without moving the page');
-  assert.match(nodes.obsEvidenceText.textContent,/ZAP.*\nNuclei/);
-  nodes.obsFinding2.dispatch('click');
-  assert.match(nodes.obsVerdict.textContent,/Potential false positive/);
-  nodes.obsFix.dispatch('click');
-  assert.match(nodes.obsDetailText.textContent,/backport/);
-  nodes.obsLab.dispatch('click');
-  assert.equal(nodes.obsPriority0.textContent,'FIX BEFORE RELEASE');
-  nodes.obsPublic.dispatch('click');
-  assert.equal(nodes.obsPriority0.textContent,'INVESTIGATE FIRST');
-  nodes.obsFinding0.dispatch('click');
-  nodes.obsPath.dispatch('click');
-  assert.match(nodes.obsEvidenceText.textContent,/not demonstrated/);
-  nodes.obsReset.dispatch('click');
-  assert.equal(nodes.obsAssessment.hidden,true);
-  assert.equal(nodes.obsRaw.hidden,false);
+  assert.equal(nodes.obsBack.disabled,true);
+  nodes.obsNext.dispatch('click');
+  assert.match(nodes.obsResultTitle.textContent,/6 reports → 3 issues/);
+  nodes.obsNext.dispatch('click');
+  assert.match(nodes.obsTitle.textContent,/Check again/);
+  nodes.obsBack.dispatch('click');
+  assert.match(nodes.obsTitle.textContent,/debug page/);
+  nodes.obsNext.dispatch('click');
+  nodes.obsNext.dispatch('click');
+  assert.equal(nodes.obsBack.disabled,true,'Try again returns to the beginning');
+  assert.match(nodes.obsStep.textContent,/1 \/ 3/);
   for (const [distance,key,expected] of [[0,true,'Unlocked'],[1,true,'Locked'],[100,true,'Locked'],[0,false,'Locked'],[50,false,'Locked'],[0,true,'Unlocked']]) {
     nodes.fileLocation.value=String(distance);nodes.correctKey.checked=key;
     nodes.fileLocation.dispatch('input');
