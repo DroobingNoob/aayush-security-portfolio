@@ -23,13 +23,14 @@ class Element {
   dispatch(type, extra={}) {(this.listeners[type] || []).forEach(callback=>callback({target:this,currentTarget:this,...extra}));}
   setAttribute(key,value) {this.attrs[key]=value;}
   getAttribute(key) {return this.attrs[key];}
+  closest() {return null;}
   getBoundingClientRect() {return {top:0,bottom:800,left:0,width:500,height:800};}
 }
 function setup(reduced=false) {
   const nodes = Object.fromEntries([...html.matchAll(/id="([^"]+)"/g)].map(match=>[match[1],new Element()]));
   const scroller = nodes.studioScroll;
   scroller.scrollTop=0;scroller.clientHeight=800;scroller.scrollHeight=6000;
-  const scenes = ['intro','frontend','obsidian','projects','credentials','delivery','connect'].map((id,index)=>{
+  const scenes = ['intro','frontend','projects','credentials','delivery','connect'].map((id,index)=>{
     const el = nodes[id];
     el.getBoundingClientRect=()=>({top:index*800-scroller.scrollTop,bottom:(index+1)*800-scroller.scrollTop});
     return el;
@@ -69,11 +70,25 @@ for(const reduced of [false,true]) {
   nodes.nextProject.dispatch('click');
   assert.equal(projectTabs[1].attrs['aria-pressed'],'true','Carousel changes the selected project');
   assert.equal(projectSlides[1].attrs['aria-hidden'],'false');
-  nodes.projectModelAction.dispatch('click');
-  assert.equal(nodes.projectModelAction.attrs['aria-pressed'],'true');
-  assert.ok(projectModels[1].classList.contains('is-expanded'),'Project action changes only the selected system model');
-  nodes.projectRotation.value='24';nodes.projectRotation.dispatch('input');
-  assert.equal(projectModels[1].styles['--project-rotation'],'24deg');
+  nodes.combineEvidence.dispatch('click');
+  assert.match(nodes.evidenceResult.textContent,/1 issue.*2 supporting sources/);
+  nodes.resetEvidence.dispatch('click');
+  assert.equal(nodes.combineEvidence.disabled,false);
+  for (const [distance,key,expected] of [[0,true,'Unlocked'],[1,true,'Locked'],[100,true,'Locked'],[0,false,'Locked'],[50,false,'Locked'],[0,true,'Unlocked']]) {
+    nodes.fileLocation.value=String(distance);nodes.correctKey.checked=key;
+    nodes.fileLocation.dispatch('input');
+    assert.equal(nodes.fileState.textContent,expected,'Both location and key must match');
+  }
+  nodes.correctKey.checked=false;nodes.correctKey.dispatch('change');
+  assert.equal(nodes.fileState.textContent,'Locked');
+  nodes.sendSafe.dispatch('click');
+  assert.equal(nodes.websiteNode.textContent,'Received');
+  nodes.sendSqli.dispatch('click');
+  assert.equal(nodes.websiteNode.textContent,'Protected');
+  nodes.sendXss.dispatch('click');
+  assert.match(nodes.requestPacket.textContent,/script injection/);
+  nodes.sendSafe.dispatch('click');
+  assert.equal(nodes.requestBoard.classList.contains('blocked'),false);
   nodes.projectCarouselStage.dispatch('pointerdown',{pointerType:'touch',isPrimary:true,pointerId:9,clientX:180,clientY:40});
   nodes.projectCarouselStage.dispatch('pointerup',{pointerId:9,clientX:80,clientY:45});
   assert.equal(projectTabs[2].attrs['aria-pressed'],'true','Horizontal swipe advances the project carousel');

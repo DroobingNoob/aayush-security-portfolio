@@ -204,6 +204,41 @@ button:focus-visible,a:focus-visible,input:focus-visible,#studioScroll:focus-vis
  .hero-copy{padding-bottom:0}
  .hero-art{position:relative;right:auto;bottom:auto;width:100%;height:270px}
 }
+/* Small, reversible experiments make each project's purpose visible. */
+.project-slide{grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:32px}
+.project-copy h3{font-size:clamp(2.5rem,4.5vw,4.7rem)}
+.concept-demo{min-width:0;background:#0d071bd9;border:1px solid #ccb0f34d;border-radius:18px;padding:24px;box-shadow:0 20px 50px #0005}
+.demo-prompt>span{font:12px 'DM Mono';color:var(--lime)}
+.demo-prompt h4{font-size:1.15rem;line-height:1.4;margin:8px 0 20px;font-weight:600}
+.demo-buttons{display:flex;gap:8px;flex-wrap:wrap}
+.demo-buttons button{min-height:44px;border:1px solid #d9b7ff;background:#d9b7ff;color:#1b062b;border-radius:8px;padding:10px 14px;font:500 14px Manrope;cursor:pointer}
+.demo-buttons .demo-secondary{background:transparent;color:#e4d6f5}
+.demo-buttons button:disabled{opacity:.5;cursor:default}
+.demo-feedback{font-size:1rem;line-height:1.55;color:#e0d5ef;margin:16px 0 0;min-height:6.2em}
+.project-footer{display:flex;align-items:center;justify-content:space-between;gap:16px}
+.demo-caption{font:12px/1.5 'DM Mono';color:var(--muted)}
+.evidence-board{position:relative;min-height:220px;perspective:800px}
+.evidence-card{position:absolute;top:0;width:64%;padding:15px;border:1px solid #baa0ef;background:linear-gradient(135deg,#382451,#172a42);border-radius:10px;font:12px 'DM Mono';box-shadow:0 14px 28px #0006;transform:rotateY(-9deg) rotateZ(-3deg);transition:transform .6s,opacity .6s}
+.evidence-card strong,.evidence-card small{display:block;margin-top:8px}.evidence-card strong{font:500 15px/1.4 Manrope}
+.evidence-card:nth-child(2){left:34%;top:45px;transform:rotateY(-9deg) rotateZ(4deg)}
+.evidence-result{position:absolute;bottom:12px;left:0;right:0;padding:12px;border:1px solid #a78cb963;border-radius:8px;font:14px/1.5 Manrope;background:#1b102c;transition:background .4s,border-color .4s}
+.evidence-result span{display:block;color:var(--muted)}
+.combined .evidence-card:first-child{transform:translateX(25%) translateY(14px) rotateY(0)}
+.combined .evidence-card:nth-child(2){transform:translateX(-27%) translateY(-24px) translateZ(-30px);opacity:.28}
+.combined .evidence-result{border-color:var(--lime);background:#213526;color:var(--lime)}
+.location-board{position:relative;height:180px;margin-bottom:14px;border-bottom:1px solid #c8aaff55;background:repeating-linear-gradient(90deg,transparent 0,transparent 39px,#c8aaff0e 40px);--distance:0%}
+.location-home{position:absolute;inset:5px auto 8px 0;width:48%;border:1px dashed #cbff7970;border-radius:12px;padding:12px 8px;color:var(--lime);font:11px 'DM Mono'}
+.location-file{position:absolute;left:calc(var(--distance) * .5);top:45px;width:48%;padding:16px 10px;border:1px solid var(--lime);border-radius:10px;background:linear-gradient(145deg,#244e42,#18263d);box-shadow:8px 12px 0 #07021170,0 16px 25px #0005;transform:perspective(700px) rotateY(-9deg);transition:left .15s,border-color .3s,background .3s}
+.location-file span,.location-file small{display:block;font:12px/1.5 'DM Mono'}.location-file strong{display:block;font-size:20px;margin:5px 0;color:var(--lime)}.locked .location-file{border-color:#ff9dbd;background:linear-gradient(145deg,#542c48,#222238)}.locked .location-file strong{color:#ffafca}
+.demo-range{display:block;font-size:14px}.demo-range>span:not(.range-endpoints){display:block;font-size:12px;color:var(--muted);margin:4px 0}
+.demo-range input{width:100%;height:36px;accent-color:var(--lime);margin:0;cursor:ew-resize}.range-endpoints{display:flex;justify-content:space-between;font:12px 'DM Mono';color:var(--muted)}.demo-check{display:flex;align-items:center;gap:10px;min-height:44px;margin-top:10px;font-size:14px}.demo-check input{width:20px;height:20px;accent-color:var(--lime)}
+.request-board{position:relative;display:grid;grid-template-columns:1fr 18px 1fr 18px 1fr;align-items:center;gap:3px;height:180px;padding-bottom:45px;perspective:800px}
+.request-node{padding:18px 5px;text-align:center;border:1px solid #b698d670;border-radius:9px;background:linear-gradient(145deg,#302043,#13283a);font-size:14px;box-shadow:4px 9px 0 #07021190;transform:rotateY(-8deg);transition:border-color .3s,color .3s}.request-node.firewall{border-color:#d6b5ff}.path-arrow{text-align:center;color:var(--muted)}
+.request-packet{position:absolute;left:0;bottom:18px;max-width:100%;padding:8px 12px;border-radius:7px;background:#38254d;color:#e8d8fa;font:12px 'DM Mono';transition:left .5s,transform .5s,background .3s}
+.allowed .request-packet{left:100%;transform:translateX(-100%);background:#29422d;color:var(--lime)}.blocked .request-packet{left:50%;transform:translateX(-50%);background:#52213d;color:#ffb7d1}
+.allowed #websiteNode{border-color:var(--lime);color:var(--lime)}.blocked .firewall{border-color:#ff9dbd;color:#ffb7d1}.blocked #requestArrow{color:#ff9dbd}
+@media(max-width:900px){.project-slide{grid-template-columns:minmax(0,1fr);padding:24px;gap:24px}.concept-demo{padding:20px}.project-copy h3{font-size:clamp(2.5rem,8vw,4rem)}.project-carousel-stage{min-height:0}.project-slide{min-height:0}.demo-feedback{min-height:0}}
+@media(max-width:420px){.project-slide{padding:18px}.concept-demo{padding:16px}.request-options button{flex:1 1 100%}.project-footer{align-items:flex-start}.demo-caption{max-width:150px}}
 @media(prefers-reduced-motion:reduce){
  #studioScroll{scroll-behavior:auto}
  *,*:before,*:after{animation:none!important;transition:none!important}

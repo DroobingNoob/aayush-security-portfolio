@@ -1,7 +1,7 @@
 (() => {
   'use strict';
   const scroller = document.getElementById('studioScroll');
-  const scenes = [...scroller.querySelectorAll('.scene')].filter(scene => scene.id !== 'obsidian');
+  const scenes = [...scroller.querySelectorAll('.scene')];
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
   const previous = document.getElementById('previousChapter');
   const next = document.getElementById('nextChapter');
@@ -80,17 +80,8 @@
   // One project record: every system has a model that explains its security idea.
   const projectSlides = [...document.querySelectorAll('.project-slide')];
   const projectTabs = [...document.querySelectorAll('.project-tab')];
-  const projectModels = [...document.querySelectorAll('.project-model')];
-  const projectRotation = document.getElementById('projectRotation');
-  const projectAction = document.getElementById('projectModelAction');
-  const projectStatus = document.getElementById('projectModelStatus');
   const projectCounter = document.getElementById('projectCounter');
-  const projectCopy = [
-    {action: 'Separate architecture layers', active: 'Stack architecture layers', status: 'Three assessment layers, connected in one model.', activeStatus: 'The scanners, normalized evidence, and contextual risk are separated for inspection.'},
-    {action: 'Show location boundary', active: 'Hide location boundary', status: 'A user key is paired with the original geographic context.', activeStatus: 'The illuminated boundary represents the location constraint required for decryption.'},
-    {action: 'Trace blocked request', active: 'Reset request path', status: 'Each request is inspected before it can reach the destination.', activeStatus: 'The request is diverted at the inspection gate when a threat pattern is found.'}
-  ];
-  let selectedProject = 0, projectExpanded = false;
+  let selectedProject = 0;
   function renderProject() {
     projectSlides.forEach((slide, index) => {
       const activeSlide = index === selectedProject;
@@ -99,29 +90,19 @@
       slide.setAttribute('aria-hidden', String(!activeSlide));
     });
     projectTabs.forEach((tab, index) => tab.setAttribute('aria-pressed', String(index === selectedProject)));
-    projectModels.forEach((model, index) => model.classList.toggle('is-expanded', index === selectedProject && projectExpanded));
-    const detail = projectCopy[selectedProject];
-    projectAction.setAttribute('aria-pressed', String(projectExpanded));
-    projectAction.textContent = projectExpanded ? detail.active : detail.action;
-    projectStatus.textContent = projectExpanded ? detail.activeStatus : detail.status;
     projectCounter.textContent = (selectedProject + 1) + ' / ' + projectSlides.length;
-    projectRotation.value = '-12';
-    projectModels[selectedProject].style.setProperty('--project-rotation', '-12deg');
   }
   function chooseProject(index) {
     selectedProject = (index + projectSlides.length) % projectSlides.length;
-    projectExpanded = false;
     renderProject();
   }
   projectTabs.forEach((tab, index) => tab.addEventListener('click', () => chooseProject(index)));
   document.getElementById('previousProject').addEventListener('click', () => chooseProject(selectedProject - 1));
   document.getElementById('nextProject').addEventListener('click', () => chooseProject(selectedProject + 1));
-  projectRotation.addEventListener('input', event => projectModels[selectedProject].style.setProperty('--project-rotation', event.target.value + 'deg'));
-  projectAction.addEventListener('click', () => {projectExpanded = !projectExpanded;renderProject();});
   const projectSurface = document.getElementById('projectCarouselStage');
   let projectSwipe = null;
   projectSurface.addEventListener('pointerdown', event => {
-    if (event.pointerType === 'mouse' || !event.isPrimary) return;
+    if (event.pointerType === 'mouse' || !event.isPrimary || event.target.closest('button, input, label')) return;
     projectSwipe = {x: event.clientX, y: event.clientY, id: event.pointerId};
   });
   projectSurface.addEventListener('pointerup', event => {
@@ -132,6 +113,51 @@
   });
   projectSurface.addEventListener('pointercancel', () => {projectSwipe = null;});
   renderProject();
+
+  const byId = id => document.getElementById(id);
+  function combineEvidence(combined) {
+    byId('evidenceBoard').classList.toggle('combined', combined);
+    byId('evidenceResult').textContent = combined ? '1 issue · 2 supporting sources' : '2 separate reports · same page, same issue';
+    byId('evidenceFeedback').textContent = combined
+      ? 'One issue to investigate, with evidence from both tools. Grouping duplicates reduces repeated work; it does not prove the finding is valid.'
+      : 'Two tools found the same missing header. Combine them to see the shared evidence.';
+    byId('combineEvidence').disabled = combined;
+  }
+  byId('combineEvidence').addEventListener('click', () => combineEvidence(true));
+  byId('resetEvidence').addEventListener('click', () => combineEvidence(false));
+  function updateLocation() {
+    const distance = Number(byId('fileLocation').value);
+    const original = distance === 0;
+    const key = byId('correctKey').checked;
+    const unlocked = original && key;
+    byId('locationBoard').style.setProperty('--distance', distance + '%');
+    byId('locationBoard').classList.toggle('locked', !unlocked);
+    byId('fileState').textContent = unlocked ? 'Unlocked' : 'Locked';
+    byId('fileContent').textContent = unlocked ? 'Meeting at 10:00' : '•••• •••• ••••';
+    byId('locationLabel').textContent = original ? 'At original location' : 'Away from original location';
+    byId('geoFeedback').textContent = !key
+      ? 'The key is wrong. Returning to the original location alone cannot unlock the file.'
+      : original ? 'Correct key + original location: the file opens. Try moving it away.'
+      : 'The key is correct, but the location has changed. Move all the way back to unlock the file.';
+  }
+  byId('fileLocation').addEventListener('input', updateLocation);
+  byId('correctKey').addEventListener('change', updateLocation);
+  const requests = {
+    Safe: ['allowed', 'Allowed', 'Normal visit delivered. The request passes inspection and reaches the website.'],
+    Sqli: ['blocked', 'Blocked · SQL injection', 'Stopped at the firewall. This sample tries to change a database query through user input.'],
+    Xss: ['blocked', 'Blocked · script injection', 'Stopped at the firewall. This sample tries to insert a script into a page a visitor would open.']
+  };
+  Object.entries(requests).forEach(([name, detail]) => {
+    byId('send' + name).addEventListener('click', () => {
+      const board = byId('requestBoard');
+      board.classList.toggle('allowed', detail[0] === 'allowed');
+      board.classList.toggle('blocked', detail[0] === 'blocked');
+      byId('requestPacket').textContent = detail[1];
+      byId('requestArrow').textContent = detail[0] === 'allowed' ? '→' : '×';
+      byId('websiteNode').textContent = detail[0] === 'allowed' ? 'Received' : 'Protected';
+      byId('wafFeedback').textContent = detail[2];
+    });
+  });
 
   const deck = [...document.querySelectorAll('#credentialDeck article')];
   let selected = 0;
