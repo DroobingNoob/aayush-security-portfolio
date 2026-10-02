@@ -24,6 +24,7 @@ class Element {
   setAttribute(key,value) {this.attrs[key]=value;}
   getAttribute(key) {return this.attrs[key];}
   closest() {return null;}
+  focus() {this.focused=true;}
   getBoundingClientRect() {return {top:0,bottom:800,left:0,width:500,height:800};}
 }
 function setup(reduced=false) {
@@ -79,10 +80,25 @@ for(const reduced of [false,true]) {
   nodes.nextProject.dispatch('click');
   assert.equal(projectTabs[1].attrs['aria-pressed'],'true','Carousel changes the selected project');
   assert.equal(projectSlides[1].attrs['aria-hidden'],'false');
-  nodes.combineEvidence.dispatch('click');
-  assert.match(nodes.evidenceResult.textContent,/1 issue.*2 supporting sources/);
-  nodes.resetEvidence.dispatch('click');
-  assert.equal(nodes.combineEvidence.disabled,false);
+  nodes.obsAnalyze.dispatch('click');
+  assert.equal(nodes.obsRaw.hidden,true);
+  assert.equal(nodes.obsAssessment.hidden,false);
+  assert.equal(nodes.obsFinding0.focused,true,'Focus moves into the opened assessment without moving the page');
+  assert.match(nodes.obsEvidenceText.textContent,/ZAP.*\nNuclei/);
+  nodes.obsFinding2.dispatch('click');
+  assert.match(nodes.obsVerdict.textContent,/Potential false positive/);
+  nodes.obsFix.dispatch('click');
+  assert.match(nodes.obsDetailText.textContent,/backport/);
+  nodes.obsLab.dispatch('click');
+  assert.equal(nodes.obsPriority0.textContent,'FIX BEFORE RELEASE');
+  nodes.obsPublic.dispatch('click');
+  assert.equal(nodes.obsPriority0.textContent,'INVESTIGATE FIRST');
+  nodes.obsFinding0.dispatch('click');
+  nodes.obsPath.dispatch('click');
+  assert.match(nodes.obsEvidenceText.textContent,/not demonstrated/);
+  nodes.obsReset.dispatch('click');
+  assert.equal(nodes.obsAssessment.hidden,true);
+  assert.equal(nodes.obsRaw.hidden,false);
   for (const [distance,key,expected] of [[0,true,'Unlocked'],[1,true,'Locked'],[100,true,'Locked'],[0,false,'Locked'],[50,false,'Locked'],[0,true,'Unlocked']]) {
     nodes.fileLocation.value=String(distance);nodes.correctKey.checked=key;
     nodes.fileLocation.dispatch('input');

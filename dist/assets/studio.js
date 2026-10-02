@@ -115,16 +115,59 @@
   renderProject();
 
   const byId = id => document.getElementById(id);
-  function combineEvidence(combined) {
-    byId('evidenceBoard').classList.toggle('combined', combined);
-    byId('evidenceResult').textContent = combined ? '1 issue · 2 supporting sources' : '2 separate reports · same page, same issue';
-    byId('evidenceFeedback').textContent = combined
-      ? 'One issue to investigate, with evidence from both tools. Grouping duplicates reduces repeated work; it does not prove the finding is valid.'
-      : 'Two tools found the same missing header. Combine them to see the shared evidence.';
-    byId('combineEvidence').disabled = combined;
+  // Prepared, fictional assessment: no scanners or AI services run in this preview.
+  const obsFindings = [
+    {title:'Debug page exposed', summary:'Two tools observed the same accessible debug page.',
+      evidence:['OBSERVED IN SAMPLE','ZAP: GET /debug → 200 OK\nNuclei: debug-page match on /debug\nResponse: stack trace + internal file paths','Both reports point to the same endpoint and disclosure. They become one issue with two supporting sources.','Observed exposure; further access is not demonstrated.'],
+      path:['POSSIBLE IMPACT','Public visitor → debug page → internal details\nFurther compromise → not demonstrated','Internal paths and framework details could help an attacker plan a more targeted attack. This is a possible next step, not proof of a successful attack.','Evidence supports information exposure, not account or database access.'],
+      fix:['REMEDIATION','Disable production debug output\nRestrict diagnostic endpoints\nRetest /debug without authentication','Keep detailed errors in protected server logs. Return a generic error to visitors and check that internal paths are no longer exposed.','Success check: unauthenticated visitors cannot retrieve diagnostic details.']},
+    {title:'Missing browser protection', summary:'Two reports identify the missing Content Security Policy on the same page.',
+      evidence:['OBSERVED IN SAMPLE','ZAP: /account response has no CSP header\nNuclei: missing-csp match on /account','A Content Security Policy tells the browser which sources of scripts and other content are allowed. The sample response does not provide one.','A missing policy alone does not prove script injection is possible.'],
+      path:['POSSIBLE IMPACT','Script injection flaw, if present → browser execution\nMissing CSP → fewer layers of protection','This is a hardening gap. It can increase the impact of a separate injection flaw, but neither scanner demonstrated such a flaw in this example.','No proven attack chain: the required injection flaw has not been observed.'],
+      fix:['REMEDIATION','Inventory required script and content sources\nTrial a policy in Report-Only mode\nReview violations, then enforce','Develop a policy suited to the application. Test login, account pages, and integrations before enforcing it.','Success check: the policy is present and essential application flows still work.']},
+    {title:'Old server banner', summary:'Two version-based reports may describe a patched server. Validate before treating them as a confirmed vulnerability.',
+      evidence:['NEEDS VALIDATION','Nmap: older version string in server banner\nNuclei: version-based warning\nSample asset note: security fixes backported','A banner may retain an older version even when security fixes have been applied. The asset note is useful context, but must be checked against installed packages.','Potential false positive; not automatically dismissed.'],
+      path:['POSSIBLE IMPACT','Older banner → suspected vulnerable version\nInstalled vulnerable code → not established','The report suggests a vulnerability based on a version string. There is no exploitation evidence, and the sample patch note creates uncertainty.','Do not equate a version match with a confirmed exploitable service.'],
+      fix:['VALIDATION FIRST','Check installed package and build\nCompare vendor security advisory\nDocument whether the fix is present','If the fix is missing, patch and retest. If the backport is confirmed, record the supporting evidence when closing the warning.','Success check: a documented patch assessment replaces the banner-only assumption.']}
+  ];
+  let obsSelected = 0, obsView = 'evidence', obsPublic = true;
+  function renderObsidian() {
+    const finding = obsFindings[obsSelected], detail = finding[obsView];
+    byId('obsFindingTitle').textContent = finding.title;
+    byId('obsFindingSummary').textContent = finding.summary;
+    ['Evidence','Path','Fix'].forEach((name,index) => byId('obs'+name).setAttribute('aria-pressed', String(obsView === ['evidence','path','fix'][index])));
+    obsFindings.forEach((_,index) => byId('obsFinding'+index).setAttribute('aria-pressed', String(index === obsSelected)));
+    byId('obsDetailLabel').textContent = detail[0];
+    byId('obsEvidenceText').textContent = detail[1];
+    byId('obsDetailText').textContent = detail[2];
+    byId('obsVerdict').textContent = detail[3];
+    byId('obsPublic').setAttribute('aria-pressed', String(obsPublic));
+    byId('obsLab').setAttribute('aria-pressed', String(!obsPublic));
+    byId('obsPriority0').textContent = obsPublic ? 'INVESTIGATE FIRST' : 'FIX BEFORE RELEASE';
+    byId('obsPriority1').textContent = obsPublic ? 'HARDENING' : 'PREPARE FOR RELEASE';
+    byId('obsContextNote').textContent = obsPublic
+      ? 'Public exposure makes the debug page the first issue to investigate.'
+      : 'In this isolated lab scenario, immediate exposure is lower. The findings remain: fix them before making the app public.';
   }
-  byId('combineEvidence').addEventListener('click', () => combineEvidence(true));
-  byId('resetEvidence').addEventListener('click', () => combineEvidence(false));
+  function openObsidian(open) {
+    byId('obsRaw').hidden = open;
+    byId('obsAssessment').hidden = !open;
+    byId('obsAnalyze').hidden = open;
+    byId('obsReset').hidden = !open;
+    byId('obsInstruction').textContent = open
+      ? 'Choose an issue, inspect its evidence, then explore the impact and next action. Try changing the target context.'
+      : 'Start with six reports from three scanners. See how Obsidian turns them into an investigation.';
+    obsSelected = 0; obsView = 'evidence'; obsPublic = true;
+    renderObsidian();
+    byId(open ? 'obsFinding0' : 'obsAnalyze').focus({preventScroll:true});
+  }
+  byId('obsAnalyze').addEventListener('click', () => openObsidian(true));
+  byId('obsReset').addEventListener('click', () => openObsidian(false));
+  obsFindings.forEach((_,index) => byId('obsFinding'+index).addEventListener('click', () => {obsSelected=index;obsView='evidence';renderObsidian();}));
+  ['Evidence','Path','Fix'].forEach((name,index) => byId('obs'+name).addEventListener('click', () => {obsView=['evidence','path','fix'][index];renderObsidian();}));
+  byId('obsPublic').addEventListener('click', () => {obsPublic=true;renderObsidian();});
+  byId('obsLab').addEventListener('click', () => {obsPublic=false;renderObsidian();});
+  renderObsidian();
   function updateLocation() {
     const distance = Number(byId('fileLocation').value);
     const original = distance === 0;
