@@ -38,6 +38,9 @@ function setup(reduced=false) {
   const requests=[];scroller.scrollTo=value=>requests.push(value);
   scroller.querySelectorAll=()=>scenes;
   const cards=Array.from({length:3},()=>new Element());
+  const credentialCards=Array.from({length:19},(_,index)=>{const card=new Element();card.dataset.kind=index<14?'credential':index<18?'challenge':'practice';return card;});
+  const credentialFilters=['all','credential','challenge','practice'].map(filter=>{const button=new Element();button.dataset.credentialFilter=filter;return button;});
+  const credentialIndex=Array.from({length:19},()=>new Element());
   const projectSlides=Array.from({length:3},()=>new Element());
   const projectTabs=Array.from({length:3},()=>new Element());
   const projectModels=Array.from({length:3},()=>new Element());
@@ -46,15 +49,15 @@ function setup(reduced=false) {
   const document={
     getElementById:id=>{assert.ok(nodes[id], 'Missing ID: '+id);return nodes[id];},
     querySelector:selector=>selector==='.hero'?hero:progress,
-    querySelectorAll:selector=>({'.tilt-card':cards,'.project-slide':projectSlides,'.project-tab':projectTabs,'.project-model':projectModels,'#credentialDeck article':cards}[selector])
+    querySelectorAll:selector=>({'.tilt-card':cards,'.project-slide':projectSlides,'.project-tab':projectTabs,'.project-model':projectModels,'#credentialDeck article':credentialCards,'[data-credential-filter]':credentialFilters,'[data-credential-index]':credentialIndex}[selector])
   };
   const frames=[];
   vm.runInNewContext(script,{document,matchMedia:()=>({matches:reduced}),addEventListener:()=>{},requestAnimationFrame:callback=>{frames.push(callback);return frames.length;}});
-  return {nodes,scroller,requests,cards,projectSlides,projectTabs,projectModels,flush:()=>{while(frames.length)frames.shift()();}};
+  return {nodes,scroller,requests,cards,credentialCards,credentialFilters,credentialIndex,projectSlides,projectTabs,projectModels,flush:()=>{while(frames.length)frames.shift()();}};
 }
 for(const reduced of [false,true]) {
   const state=setup(reduced);
-  const {nodes,scroller,requests,cards,projectSlides,projectTabs,projectModels}=state;
+  const {nodes,scroller,requests,cards,credentialCards,credentialFilters,credentialIndex,projectSlides,projectTabs,projectModels}=state;
   // Repeated momentum and externally repositioned scrolls must never start a new scroll.
   for(const position of [230,780,1200,803,2700,0]) {
     scroller.scrollTop=position;scroller.dispatch('scroll');state.flush();
@@ -64,9 +67,15 @@ for(const reduced of [false,true]) {
   assert.equal(requests.at(-1).top,800);
   assert.equal(requests.at(-1).behavior,reduced?'instant':'smooth');
   nodes.nextCredential.dispatch('click');
-  assert.equal(cards[1].dataset.front,'true');
+  assert.equal(credentialCards[1].dataset.front,'true');
   nodes.previousCredential.dispatch('click');
-  assert.equal(cards[0].dataset.front,'true');
+  assert.equal(credentialCards[0].dataset.front,'true');
+  credentialFilters[2].dispatch('click');
+  assert.equal(nodes.credentialCounter.textContent,'1 / 4','Challenge filter exposes every CTF and challenge');
+  credentialIndex[16].dispatch('click');
+  assert.equal(credentialCards[16].dataset.front,'true','Credential atlas jumps directly to a visible record');
+  credentialFilters[0].dispatch('click');
+  assert.equal(nodes.credentialCounter.textContent,'1 / 19','All records return to the full credential atlas');
   nodes.nextProject.dispatch('click');
   assert.equal(projectTabs[1].attrs['aria-pressed'],'true','Carousel changes the selected project');
   assert.equal(projectSlides[1].attrs['aria-hidden'],'false');
@@ -94,14 +103,14 @@ for(const reduced of [false,true]) {
   assert.equal(projectTabs[2].attrs['aria-pressed'],'true','Horizontal swipe advances the project carousel');
   nodes.credentialDeck.dispatch('pointerdown',{pointerType:'touch',isPrimary:true,pointerId:1,clientX:180,clientY:40});
   nodes.credentialDeck.dispatch('pointerup',{pointerId:1,clientX:80,clientY:45});
-  assert.equal(cards[1].dataset.front,'true','Horizontal touch swipe advances the deck');
+  assert.equal(credentialCards[1].dataset.front,'true','Horizontal touch swipe advances the deck');
   nodes.credentialDeck.dispatch('pointerdown',{pointerType:'touch',isPrimary:true,pointerId:2,clientX:80,clientY:45});
   nodes.credentialDeck.dispatch('pointerup',{pointerId:2,clientX:85,clientY:170});
-  assert.equal(cards[1].dataset.front,'true','Vertical gestures remain page scrolling');
+  assert.equal(credentialCards[1].dataset.front,'true','Vertical gestures remain page scrolling');
   nodes.credentialDeck.dispatch('pointerdown',{pointerType:'touch',isPrimary:true,pointerId:3,clientX:180,clientY:40});
   nodes.credentialDeck.dispatch('pointercancel');
   nodes.credentialDeck.dispatch('pointerup',{pointerId:3,clientX:80,clientY:45});
-  assert.equal(cards[1].dataset.front,'true','Canceled gestures do not advance the deck');
+  assert.equal(credentialCards[1].dataset.front,'true','Canceled gestures do not advance the deck');
 }
 assert.equal((html.match(/<script/g)||[]).length,1,'A single controller owns Studio');
 assert.ok(!/settleTimer|scrollend|setTimeout|scrollIntoView/.test(script),'No trailing scroll feedback loop');

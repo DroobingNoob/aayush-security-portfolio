@@ -159,21 +159,47 @@
     });
   });
 
-  const deck = [...document.querySelectorAll('#credentialDeck article')];
-  let selected = 0;
+  const completeDeck = [...document.querySelectorAll('#credentialDeck article')];
+  const credentialFilters = [...document.querySelectorAll('[data-credential-filter]')];
+  const credentialIndex = [...document.querySelectorAll('[data-credential-index]')];
+  let deck = completeDeck, selected = 0;
   function renderDeck() {
+    completeDeck.forEach(card => {
+      const visible = deck.includes(card);
+      card.hidden = !visible;
+      if (!visible) card.setAttribute('aria-hidden', 'true');
+    });
     deck.forEach((card, index) => {
       const slot = (index - selected + deck.length) % deck.length;
       card.style.setProperty('--slot', slot);
       card.style.zIndex = String(deck.length - slot);
+      card.style.opacity = slot > 3 ? '0' : String(1 - slot * .18);
+      card.style.visibility = slot > 3 ? 'hidden' : 'visible';
       card.dataset.front = String(slot === 0);
       card.inert = slot !== 0;
       card.setAttribute('aria-hidden', String(slot !== 0));
+    });
+    credentialIndex.forEach((button, index) => {
+      const card = completeDeck[index];
+      const visible = deck.includes(card);
+      button.hidden = !visible;
+      button.setAttribute('aria-pressed', String(card === deck[selected]));
     });
     document.getElementById('credentialCounter').textContent = (selected + 1) + ' / ' + deck.length;
   }
   document.getElementById('previousCredential').addEventListener('click', () => {selected = (selected - 1 + deck.length) % deck.length;renderDeck();});
   document.getElementById('nextCredential').addEventListener('click', () => {selected = (selected + 1) % deck.length;renderDeck();});
+  credentialIndex.forEach((button, index) => button.addEventListener('click', () => {
+    const position = deck.indexOf(completeDeck[index]);
+    if (position >= 0) {selected = position;renderDeck();}
+  }));
+  credentialFilters.forEach(button => button.addEventListener('click', () => {
+    const filter = button.dataset.credentialFilter;
+    credentialFilters.forEach(control => control.setAttribute('aria-pressed', String(control === button)));
+    deck = filter === 'all' ? completeDeck : completeDeck.filter(card => card.dataset.kind === filter);
+    selected = 0;
+    renderDeck();
+  }));
   renderDeck();
 
   const deckSurface = document.getElementById('credentialDeck');
